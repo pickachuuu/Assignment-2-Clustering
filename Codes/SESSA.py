@@ -270,31 +270,38 @@ def See_dbscan(arg1="medA"):
 
 def compare_clustering_methods(medA_kmeans, medA_dbscan, medB_kmeans, medB_dbscan):
     """
-    Compare and print insights between K-means and DBSCAN results
+    Compare K-means and DBSCAN results visually
     """
-    print("\nComparison of Clustering Methods for Sessa Empirical Estimator:")
-    print("-" * 60)
+    plt.figure(figsize=(15, 6))
     
-    # Compare number of clusters
-    print("\nNumber of Clusters:")
-    print(f"MedA - K-means: {len(set(medA_kmeans['cluster']))}")
-    print(f"MedA - DBSCAN: {len(set(medA_dbscan['cluster'])) - (1 if -1 in medA_dbscan['cluster'] else 0)}")
-    print(f"MedB - K-means: {len(set(medB_kmeans['cluster']))}")
-    print(f"MedB - DBSCAN: {len(set(medB_dbscan['cluster'])) - (1 if -1 in medB_dbscan['cluster'] else 0)}")
-    
-    # Compare noise points (DBSCAN only)
-    print("\nNoise Points (DBSCAN only):")
-    print(f"MedA: {sum(medA_dbscan['cluster'] == -1)} points ({(sum(medA_dbscan['cluster'] == -1)/len(medA_dbscan))*100:.1f}%)")
-    print(f"MedB: {sum(medB_dbscan['cluster'] == -1)} points ({(sum(medB_dbscan['cluster'] == -1)/len(medB_dbscan))*100:.1f}%)")
-    
-    # Compare cluster sizes
-    print("\nCluster Size Distribution:")
-    print("MedA - K-means:", dict(zip(*np.unique(medA_kmeans['cluster'], return_counts=True))))
-    print("MedA - DBSCAN:", dict(zip(*np.unique(medA_dbscan['cluster'], return_counts=True))))
-    print("MedB - K-means:", dict(zip(*np.unique(medB_kmeans['cluster'], return_counts=True))))
-    print("MedB - DBSCAN:", dict(zip(*np.unique(medB_dbscan['cluster'], return_counts=True))))
+    # Plot MedA comparison
+    plt.subplot(1, 2, 1)
+    plt.scatter(medA_kmeans['x'], medA_kmeans['y'], c=medA_kmeans['cluster'], 
+               cmap='viridis', alpha=0.7, label='K-means')
+    plt.scatter(medA_dbscan['x'], medA_dbscan['y'], c=medA_dbscan['cluster'], 
+               cmap='plasma', alpha=0.3, marker='x', label='DBSCAN')
+    plt.title('MedA: K-means vs DBSCAN')
+    plt.xlabel('Interval (days)')
+    plt.ylabel('Cumulative Probability')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
 
-# Create boxplots for individual medications and all medications combined
+    # Plot MedB comparison
+    plt.subplot(1, 2, 2)
+    plt.scatter(medB_kmeans['x'], medB_kmeans['y'], c=medB_kmeans['cluster'], 
+               cmap='viridis', alpha=0.7, label='K-means')
+    plt.scatter(medB_dbscan['x'], medB_dbscan['y'], c=medB_dbscan['cluster'], 
+               cmap='plasma', alpha=0.3, marker='x', label='DBSCAN')
+    plt.title('MedB: K-means vs DBSCAN')
+    plt.xlabel('Interval (days)')
+    plt.ylabel('Cumulative Probability')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.show()
+
+Create boxplots for individual medications and all medications combined
 print("\nBoxplots for medA:")
 medA_data = tidy[tidy['ATC'] == "medA"].copy()
 see_assumption(medA_data, "MedA")
@@ -322,27 +329,3 @@ compare_clustering_methods(
     clusters_medB_kmeans,
     clusters_medB_dbscan
 )
-
-# Print key insights
-print("\nKey Insights:")
-print("-" * 60)
-print("""
-1. Algorithm Characteristics:
-   - K-means forces all points into clusters, potentially over-fitting noise
-   - DBSCAN identifies noise points, providing more realistic clustering in sparse areas
-
-2. Maximum Intervals:
-   MedA: K-means: {:.1f} days, DBSCAN: {:.1f} days
-   MedB: K-means: {:.1f} days, DBSCAN: {:.1f} days
-
-3. Clustering Behavior:
-   - K-means creates more evenly-sized clusters
-   - DBSCAN finds naturally occurring dense regions
-
-4. Practical Implications:
-   - K-means might be better for regular prescription patterns
-   - DBSCAN might be better for identifying irregular prescriptions
-""".format(
-    max_interval_medA_kmeans, max_interval_medA_dbscan,
-    max_interval_medB_kmeans, max_interval_medB_dbscan
-))
