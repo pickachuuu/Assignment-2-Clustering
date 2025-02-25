@@ -30,10 +30,13 @@ def plot_clustering_analysis(data_scaled, method, arg1, dfper, labels, x_vals, y
     
     # Plot Density
     plt.subplot(1, 3, 2)
-    log_intervals = np.log(dfper['x'])
-    kde = gaussian_kde(log_intervals)
-    x_range = np.linspace(log_intervals.min(), log_intervals.max(), 100)
-    plt.plot(x_range, kde(x_range))
+    # Add small constant and filter out non-positive values before log transform
+    positive_intervals = dfper['x'][dfper['x'] > 0]
+    if len(positive_intervals) > 0:
+        log_intervals = np.log(positive_intervals)
+        kde = gaussian_kde(log_intervals)
+        x_range = np.linspace(log_intervals.min(), log_intervals.max(), 100)
+        plt.plot(x_range, kde(x_range))
     plt.title(f'Density of log(event_interval) ({arg1}) - {method}')
     plt.xlabel('log(event_interval)')
     plt.ylabel('Density')
@@ -301,7 +304,7 @@ def compare_clustering_methods(medA_kmeans, medA_dbscan, medB_kmeans, medB_dbsca
     plt.tight_layout()
     plt.show()
 
-Create boxplots for individual medications and all medications combined
+# Create boxplots for individual medications and all medications combined
 print("\nBoxplots for medA:")
 medA_data = tidy[tidy['ATC'] == "medA"].copy()
 see_assumption(medA_data, "MedA")
